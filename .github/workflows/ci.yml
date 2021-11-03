@@ -1,0 +1,39 @@
+name: github Dev CI/CD
+
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    #checkout code from repo
+    - name: Checkout code
+      uses: actions/checkout@v1
+    
+    #install node js
+    - name: Use Node.js 14.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    
+    #Rum npm install and build the code
+    - name: Run install
+      working-directory: ./git_finder_app
+      run: npm install
+    - name: Run build
+      working-directory: ./git_finder_app
+      run: npm run build --if-present
+
+    #deploy to netlify with credentials
+    - name: Deploy to netlify
+      uses: netlify/actions/cli@master
+      env:
+        NETLIFY_AUTH_TOKEN: ${{secrets.NETLIFY_AUTH_TOKEN}}
+        NETLIFY_SITE_ID: ${{secrets.NETLIFY_SITE_ID}}
+      with:
+        args: deploy --dir=build --prod
+        secrets: '["NETLIFY_AUTH_TOKEN", "NETLIFY_SITE_ID"]'
